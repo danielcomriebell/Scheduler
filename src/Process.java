@@ -20,6 +20,45 @@ public class Process implements Comparable<Process> {
     public boolean accounted_for_io_util = false;
     private int priority;
     private boolean flag = false;
+    private int runningTime = 0;
+    private int PriorityRatio= 0;
+    private int currentCycle = 0;
+    
+    
+    public int getCycle(){
+    	return currentCycle;
+    }
+    
+    public void setCycle(int newInt){
+    	this.currentCycle = newInt;
+    }
+    
+    public double calcRatio(){
+    	if(this.getCPUTimeRemaining() == this.getC()){
+    		return (double) currentCycle - this.getA();
+    	}else{
+    		return (double)(currentCycle - this.getA())/(this.getC() - this.getCPUTimeRemaining());
+    	}  	
+    }
+    
+    
+    public int getPriorityRatio(){
+    	return this.PriorityRatio; 
+    }
+    
+    public void setPriorityRatio(int newInt){
+    	this.PriorityRatio = newInt;
+    }
+    
+    
+    
+    public int getRunningTime(){
+    	return runningTime;
+    }
+    
+    public void setRunningTime(int newInt){
+    	this.runningTime = newInt;
+    }
     
     public boolean getFlag(){
     	return flag;
@@ -37,7 +76,6 @@ public class Process implements Comparable<Process> {
         return priority;
     }
     
-    
     public boolean getAccounted_for_io_util(){
         return accounted_for_io_util;
     }
@@ -45,8 +83,6 @@ public class Process implements Comparable<Process> {
     public void switchAccounted_for_io_util(boolean value){
         this.accounted_for_io_util = value;
     }
-    
-    
     
     public int getC2(){
         return C2;
@@ -68,7 +104,6 @@ public class Process implements Comparable<Process> {
     }
     
     public int decrementCPU(){
-        //    	this.CPUTimeRemaining--;
         return this.CPUTimeRemaining--;
     }
     

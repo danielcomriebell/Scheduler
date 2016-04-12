@@ -23,8 +23,13 @@ public class Schedule extends Process{
     static int cycle = 0;
     public static int numProcesses = 0;
     static java.util.List<Process> jobList = new ArrayList<Process>(); //list to hold all the jobs
+    static java.util.List<Process> jobListq = new ArrayList<Process>();
     static Scanner randomnumb = newScanner("random-numbers");
     static Stack<Process> lifo = new Stack();
+    static boolean RR = false;
+    static boolean FCFS = false;
+    static boolean LCFS = false;
+    static boolean HPRN = false;
     
     
     //FCFS algorithm
@@ -214,226 +219,11 @@ public class Schedule extends Process{
         
     }
     
-    
-    public static void RR(java.util.List<Process> jobList2){
-        
-        ArrayList<Process> q = new ArrayList<Process>(); //Queue to keep track of Ready Processes
-        java.util.List<Process> readyq = new ArrayList<Process>(); //Queue to keep track of Ready Processes
-        java.util.List<Process> tiebreaker = new ArrayList<Process>();
-        int avgturnaround = 0;
-        int avgreadytime = 0;
-        int Jobblocked = 0;
-        int Jobrunning = 0;
-        int Jobready = 0 ;
-        int numterminate = 0;
-        Process processRunning = null;
-        int newvar3 = 0;
-        int newvar4 = 0;
-        int readyCounter = 0;
-        int quantum = 2;
-        int temp = 2;
-        
-        while (numterminate < jobList2.size()){
-//        	int quantum = 2;
-            boolean accountedfor = false;
-//            int quantum = 2; //setting the quantum
-            
-            if (verbose = true){
-                System.out.print("Before Cycle    " + cycle + ":" );
-                for(Process p: jobList2){
-                    
-                    if (p.getProcessState() == "unstarted"){
-                        System.out.print("   " + p.getProcessState() +  "  " + 0 + "   ");
-                    }
-                    else if (p.getProcessState() == "terminated"){
-                        System.out.print("   " + p.getProcessState() +  "  " + 0 + "   ");
-                    }
-                    else if (p.getProcessState() == "ready"){
-                        System.out.print("   " + p.getProcessState() +  "  " + 0 + "   ");
-                        int var = p.getReadyNum();
-                        var++;
-                        p.setReadyNum(var);
-                    }
-                    else if (p.getProcessState() == "blocked"){
-                        System.out.print("   " + p.getProcessState() +  "  " + p.getIOBurstRemaining() + "   ");
-                    }
-                    else if (p.getProcessState() == "running"){
-                        System.out.print("   " + p.getProcessState() +  "  " + p.getCPUBurstRemaining() + "   ");
-                        Jobrunning++;
-                    }
-                }
-                System.out.println();
-            }
-            //if not verbose
-            else{
-                
-                for(Process p: jobList2){
-                    
-                    if (p.getProcessState() == "running"){
-                        Jobrunning++;
-                    }
-                    
-                    else if (p.getProcessState() == "ready"){
-                        int var = p.getReadyNum();
-                        var++;
-                        p.setReadyNum(var);
-                        Jobready++;
-                    }
-                    
-                }
-                
-            }
-            
-            //do blocked
-            
-            for (Process p: jobList2){
-                if (p.getProcessState() == "blocked"){
-                    
-                    int var = p.getBlockedNum();
-                    var++;
-                    p.setBlockedNum(var);
-                    
-                    if (accountedfor == false){
-                        Jobblocked++;
-                        accountedfor = true;
-                    }
-                    
-                    int newvar = p.getIOBurstRemaining();
-                    newvar--;
-                    p.setIOBurstRemaining(newvar);
-                    
-                    if (p.getIOBurstRemaining() == 0){
-                    	readyq.add(p);
-                        p.setProcessState("ready");
-                        readyCounter++;
-                    }
-                    
-                }
-            }
-            
-            
-            
-            //do running
-            for (Process p: jobList2){
-                
-                
-                if (p.getProcessState() == "running" && processRunning != null){
-                    
-                    quantum--; //decrement the quantum
-                    
-                    int newvar2 = p.getCPUTimeRemaining();
-                    newvar2--;
-                    p.setCPUTimeRemaining(newvar2);
-                    
-                    
-                    int newvar = p.getCPUBurstRemaining();
-                    newvar--;
-                    p.setCPUBurstRemaining(newvar);
-                    
-                    
-                                      
-                    if (p.getCPUBurstRemaining() == 0 && p.getCPUTimeRemaining() > 0){
-                        p.setProcessState("blocked");
-                        processRunning = null;
-                        p.setIOBurstRemaining(RandomOS(p.getIO()));
-                        
-                    }
-                    if (p.getCPUTimeRemaining() == 0){
-                        p.setProcessState("terminated");
-                        numterminate++;
-                        processRunning = null;
-                        p.setEndTime(cycle);
-                    }
-                                      
-                }
-            }
-            
-            if (readyq.size() >= 1){
-                insertionSort(readyq);
-                for (Process p: readyq){
-              	  q.add(p);
-                }
-                readyq.clear();
-            }
-            
-            
-            
-            
-            //do arriving
-            for(Process p: jobList2){
-                
-                
-                if (p.getA() == cycle && p.getProcessState() == "unstarted"){
-                    p.setProcessState("ready");
-                    readyCounter++;
-                    q.add(p);
-                }
-                
-            }
-            
-            
-            //do_ready
-            for(Process p: jobList2){
-                if (p.getProcessState() == "ready" && processRunning == null){
-                	if (q.size() > 0){
-                		 p = q.get(0);
-                		 p.setProcessState("running");
-                		 processRunning = p;
-                         if (p.getCPUBurstRemaining() == 0 && p.getFlag() == false){
-                         	p.setCPUBurstRemaining(RandomOS(p.getB()));
-                         }
-                         q.remove(0);
-                	}
-                }
-                
-                
-            }
-            
-            
-            
-            
-            
-            
-            cycle++;
-            
-            
-        }
-        System.out.println(" ");
-        System.out.println("The scheduling algorithm used was Round Robin");
-        System.out.println(" ");
-        
-        for(Process p: jobList2){
-            
-            System.out.println("Process Count: " + numProcesses);
-            System.out.println("     " + "(A,B,C,IO) = " + "(" + p.getA() + " " +  p.getB() + " " + p.getC2() + " " +  p.getIO() + ")");
-            System.out.println("     " + "Finishing Time = " +  (p.getEndTime()));
-            System.out.println("     " + "Turnaround Time = " + ((p.getEndTime()) - p.getA()));
-            System.out.println("     " + "I/O Time = " + p.getBlockedNum());
-            System.out.println("     " + "Waiting Time = " + p.getReadyNum());
-            
-            System.out.println( " ");
-            numProcesses++;
-            avgturnaround = avgturnaround + (p.getEndTime() - p.getA());
-            avgreadytime = avgreadytime + (p.getReadyNum());
-            
-        }
-        
-        System.out.println("Summary Data: ");
-        System.out.println("     " + "Finishing Time = " + (cycle-1));
-        System.out.println("     " + "CPU Utilization = " + CPUUtilization(Jobrunning, cycle));
-        System.out.println("     " + "I/O Utilization = " + IOUtliziation(Jobblocked, cycle));
-        System.out.println("     " + "Throughput = " + Throughput(numProcesses, cycle) + " processes per hundred cycles");
-        System.out.println("     " + "Average turnaround time = " + TurnAroundTime(avgturnaround, numProcesses) );
-        System.out.println("     " + "Average waiting time = " + WaitingTime(avgreadytime, numProcesses));
-        
-        
-    }
-
-    
     public static void LCFS(java.util.List<Process> jobList2){
         
         ArrayList<Process> q = new ArrayList<Process>(); //Queue to keep track of Ready Processes
         java.util.List<Process> readyq = new ArrayList<Process>(); //Queue to keep track of Ready Processes
+        java.util.List<Process> readyq2 = new ArrayList<Process>(); //Queue to keep track of Ready Processes
         java.util.List<Process> tiebreaker = new ArrayList<Process>();
         int avgturnaround = 0;
         int avgreadytime = 0;
@@ -445,16 +235,17 @@ public class Schedule extends Process{
         int newvar3 = 0;
         int newvar4 = 0;
         int readyCounter = 0;
-        int quantum = 2;
-        int temp = 2;
         
-        while (numterminate < jobList2.size()){
-        	
-        	
-            boolean accountedfor = false;
-//            int quantum = 2; //setting the quantum
+        for (int i = jobList2.size()-1; i >= 0; i--){
+            tiebreaker.add(jobList2.get(i));
+        }
+        
+        while (numterminate < tiebreaker.size()){
             
-            if (verbose = true){
+            
+            boolean accountedfor = false;
+            
+            if (verbose){
                 System.out.print("Before Cycle    " + cycle + ":" );
                 for(Process p: jobList2){
                     
@@ -483,7 +274,7 @@ public class Schedule extends Process{
             //if not verbose
             else{
                 
-                for(Process p: jobList2){
+                for(Process p: tiebreaker){
                     
                     if (p.getProcessState() == "running"){
                         Jobrunning++;
@@ -499,11 +290,11 @@ public class Schedule extends Process{
                 }
                 
             }
-           
+            
             
             //do blocked
             
-            for (Process p: jobList2){
+            for (Process p: tiebreaker){
                 if (p.getProcessState() == "blocked"){
                     
                     int var = p.getBlockedNum();
@@ -529,21 +320,20 @@ public class Schedule extends Process{
             }
             
             if (readyq.size() >= 1){
-                insertionSort(readyq);
                 for (Process p: readyq){
-              	  q.add(p);
+                    q.add(p);
                 }
                 readyq.clear();
             }
-           
+            
             
             
             //do running
-            for (Process p: jobList2){
+            for (Process p: tiebreaker){
                 
                 
                 if (p.getProcessState() == "running" && processRunning != null){
-                   
+                    
                     
                     
                     int newvar2 = p.getCPUTimeRemaining();
@@ -578,29 +368,36 @@ public class Schedule extends Process{
             
             
             //do arriving
-            for(Process p: jobList2){
+            for(Process p: tiebreaker){
                 
                 
                 if (p.getA() == cycle && p.getProcessState() == "unstarted"){
                     p.setProcessState("ready");
+                    readyq2.add(p);
+                }
+                
+                if (readyq2.size() >= 1){
+                    insertionSort(readyq2);
                     q.add(p);
+                    readyq2.clear();
                 }
                 
             }
             
             
+            
             //do_ready
-            for(Process p: jobList2){
+            for(Process p: tiebreaker){
                 if (p.getProcessState() == "ready" && processRunning == null){
-                	if (q.size() > 0){
-                		 p = q.get(q.size()-1);
-                		 p.setProcessState("running");
-                		 processRunning = p;
-                         if (p.getCPUBurstRemaining() == 0){
-                         	p.setCPUBurstRemaining(RandomOS(p.getB()));
-                         }
-                         q.remove(q.size()-1);
-                	}
+                    if (q.size() > 0){
+                        p = q.get(q.size() - 1);
+                        p.setProcessState("running");
+                        processRunning = p;
+                        if (p.getCPUBurstRemaining() == 0){
+                            p.setCPUBurstRemaining(RandomOS(p.getB()));
+                        }
+                        q.remove(q.size()-1);
+                    }
                 }
                 
                 
@@ -644,7 +441,454 @@ public class Schedule extends Process{
         System.out.println("     " + "Average waiting time = " + WaitingTime(avgreadytime, numProcesses));
         
         
+    }  
+       
+    public static void RR(java.util.List<Process> jobList2){
+        
+        ArrayList<Process> q = new ArrayList<Process>(); //Queue to keep track of Ready Processes
+        java.util.List<Process> readyq = new ArrayList<Process>(); //Queue to keep track of Ready Processes
+        java.util.List<Process> readyq2 = new ArrayList<Process>(); //Queue to keep track of Ready Processes
+        java.util.List<Process> tiebreaker = new ArrayList<Process>();
+        int avgturnaround = 0;
+        int avgreadytime = 0;
+        int Jobblocked = 0;
+        int Jobrunning = 0;
+        int Jobready = 0 ;
+        int numterminate = 0;
+        Process processRunning = null;
+        int newvar3 = 0;
+        int newvar4 = 0;
+        int readyCounter = 0;
+        int readySameTime = 0;
+        int quantum = 0;
+        
+        System.out.println(jobList2);
+        
+        while (numterminate < jobList2.size()){
+            
+            
+            boolean accountedfor = false;
+            
+            if (verbose){
+                System.out.print("Before Cycle    " + cycle + ":" );
+                for(Process p: jobList2){
+                    
+                    if (p.getProcessState() == "unstarted"){
+                        System.out.print("   " + p.getProcessState() +  "  " + 0 + "   ");
+                    }
+                    else if (p.getProcessState() == "terminated"){
+                        System.out.print("   " + p.getProcessState() +  "  " + 0 + "   ");
+                    }
+                    else if (p.getProcessState() == "ready"){
+                        System.out.print("   " + p.getProcessState() +  "  " + 0 + "   ");
+                        int var = p.getReadyNum();
+                        var++;
+                        p.setReadyNum(var);
+                    }
+                    else if (p.getProcessState() == "blocked"){
+                        System.out.print("   " + p.getProcessState() +  "  " + p.getIOBurstRemaining() + "   ");
+                    }
+                    else if (p.getProcessState() == "running"){
+                        System.out.print("   " + p.getProcessState() +  "  " + p.getCPUBurstRemaining() + "   ");
+                        Jobrunning++;
+                    }
+                }
+                System.out.println();
+            }
+            //if not verbose
+            else{
+                
+                for(Process p: jobList2){
+                    
+                    if (p.getProcessState() == "running"){
+                        Jobrunning++;
+                    }
+                    
+                    else if (p.getProcessState() == "ready"){
+                        int var = p.getReadyNum();
+                        var++;
+                        p.setReadyNum(var);
+                        Jobready++;
+                    }
+                    
+                }
+                
+            }
+            
+            
+            //do blocked
+            
+            for (Process p: jobList2){
+                if (p.getProcessState() == "blocked"){
+                    
+                    int var = p.getBlockedNum();
+                    var++;
+                    p.setBlockedNum(var);
+                    
+                    if (accountedfor == false){
+                        Jobblocked++;
+                        accountedfor = true;
+                    }
+                    
+                    int newvar = p.getIOBurstRemaining();
+                    newvar--;
+                    p.setIOBurstRemaining(newvar);
+                    
+                    if (p.getIOBurstRemaining() == 0){
+                        readyq.add(p);
+                        p.setProcessState("ready");
+                        readyCounter++;
+                        readySameTime++;
+                    }
+                    
+                }
+            }
+            
+            
+            //do running
+            for (Process p: jobList2){
+                
+                if (p.getProcessState() == "running" && processRunning != null){
+                	quantum--;
+                    int newvar2 = p.getCPUTimeRemaining();
+                    newvar2--;
+                    p.setCPUTimeRemaining(newvar2);
+                    
+                    
+                    int newvar = p.getCPUBurstRemaining();
+                    newvar--;
+                    p.setCPUBurstRemaining(newvar);
+                    if(quantum == 0){
+                    	if(p.getCPUBurstRemaining() == 0){
+                    		p.setProcessState("blocked");
+ 	                        processRunning = null;
+ 	                        p.setIOBurstRemaining(RandomOS(p.getIO()));
+                    	}else if(p.getCPUTimeRemaining() == 0){
+                    		p.setProcessState("terminated");
+ 	                        numterminate++;
+ 	                        processRunning = null;
+ 	                        p.setEndTime(cycle);
+                    	}else {
+	                    	p.setProcessState("ready");
+	                    	readySameTime++;
+	                    	readyq.add(p);
+	                    	processRunning = null;
+                    	}
+                    }else {
+	                    if (p.getCPUBurstRemaining() == 0 && p.getCPUTimeRemaining() > 0){
+	                        p.setProcessState("blocked");
+	                        processRunning = null;
+	                        p.setIOBurstRemaining(RandomOS(p.getIO()));
+	                        
+	                    }
+	                    if (p.getCPUTimeRemaining() == 0){
+	                        p.setProcessState("terminated");
+	                        numterminate++;
+	                        processRunning = null;
+	                        p.setEndTime(cycle);
+	                    }
+                    }
+                    
+                }
+            }
+            
+           
+            
+            //do arriving
+            for(Process p: jobList2){
+
+                if (p.getA() == cycle && p.getProcessState() == "unstarted"){
+                    p.setProcessState("ready");
+                    readyq.add(p);
+                    readySameTime++;
+                }
+                
+            }
+            
+            if (readySameTime > 1){
+            	insertionSort(readyq);
+                for (Process p: readyq){
+                    q.add(p);
+                }
+            }else {
+            	for(Process p: readyq){
+            		q.add(p);
+            	}
+            }
+            readyq.clear();
+            
+            //do_ready
+            for(Process p: jobList2){
+                if (p.getProcessState() == "ready" && processRunning == null){
+                    if (q.size() > 0){
+                        p = q.get(0);
+                        p.setProcessState("running");
+                        processRunning = p;
+                        quantum = 2;
+                        if (p.getCPUBurstRemaining() == 0){
+                            p.setCPUBurstRemaining(RandomOS(p.getB()));
+                        }
+                        q.remove(0);
+                    }
+                }
+                
+                
+            }
+            
+          
+            cycle++;
+            
+            
+        }
+        System.out.println(" ");
+        System.out.println("The scheduling algorithm used was Round Robin");
+        System.out.println(" ");
+        
+        for(Process p: jobList2){
+            
+            System.out.println("Process Count: " + numProcesses);
+            System.out.println("     " + "(A,B,C,IO) = " + "(" + p.getA() + " " +  p.getB() + " " + p.getC2() + " " +  p.getIO() + ")");
+            System.out.println("     " + "Finishing Time = " +  (p.getEndTime()));
+            System.out.println("     " + "Turnaround Time = " + ((p.getEndTime()) - p.getA()));
+            System.out.println("     " + "I/O Time = " + p.getBlockedNum());
+            System.out.println("     " + "Waiting Time = " + p.getReadyNum());
+            
+            System.out.println( " ");
+            numProcesses++;
+            avgturnaround = avgturnaround + (p.getEndTime() - p.getA());
+            avgreadytime = avgreadytime + (p.getReadyNum());
+            
+        }
+        
+        System.out.println("Summary Data: ");
+        System.out.println("     " + "Finishing Time = " + (cycle-1));
+        System.out.println("     " + "CPU Utilization = " + CPUUtilization(Jobrunning, cycle));
+        System.out.println("     " + "I/O Utilization = " + IOUtliziation(Jobblocked, cycle));
+        System.out.println("     " + "Throughput = " + Throughput(numProcesses, cycle) + " processes per hundred cycles");
+        System.out.println("     " + "Average turnaround time = " + TurnAroundTime(avgturnaround, numProcesses) );
+        System.out.println("     " + "Average waiting time = " + WaitingTime(avgreadytime, numProcesses));
+        
+        
     }
+       
+    public static void HPRN(java.util.List<Process> jobList2){
+        
+        ArrayList<Process> q = new ArrayList<Process>(); //Queue to keep track of Ready Processes
+        java.util.List<Process> readyq = new ArrayList<Process>(); //Queue to keep track of Ready Processes
+        java.util.List<Process> tiebreaker = new ArrayList<Process>();
+        int avgturnaround = 0;
+        int avgreadytime = 0;
+        int Jobblocked = 0;
+        int Jobrunning = 0;
+        int Jobready = 0 ;
+        int numterminate = 0;
+        Process processRunning = null;
+        int newvar3 = 0;
+        int newvar4 = 0;
+        int readyCounter = 0;
+        int quantum = 2;
+        int temp = 2;
+        
+        
+        while (numterminate < jobList2.size()){
+            boolean accountedfor = false;
+            if (verbose){
+                System.out.print("Before Cycle    " + cycle + ":" );
+                for(Process p: jobList2){
+                    
+                    if (p.getProcessState() == "unstarted"){
+                        System.out.print("   " + p.getProcessState() +  "  " + 0 + "   ");
+                    }
+                    else if (p.getProcessState() == "terminated"){
+                        System.out.print("   " + p.getProcessState() +  "  " + 0 + "   ");
+                    }
+                    else if (p.getProcessState() == "ready"){
+                        System.out.print("   " + p.getProcessState() +  "  " + 0 + "   ");
+                        int var = p.getReadyNum();
+                        var++;
+                        p.setReadyNum(var);
+                    }
+                    else if (p.getProcessState() == "blocked"){
+                        System.out.print("   " + p.getProcessState() +  "  " + p.getIOBurstRemaining() + "   ");
+                    }
+                    else if (p.getProcessState() == "running"){
+                        System.out.print("   " + p.getProcessState() +  "  " + p.getCPUBurstRemaining() + "   ");
+                        Jobrunning++;
+                    }
+                }
+                System.out.println();
+            }
+            //if not verbose
+            else{
+                
+                for(Process p: jobList2){
+                    
+                    if (p.getProcessState() == "running"){
+                        Jobrunning++;
+                        int var = p.getRunningTime();
+                        var++;
+                        p.setRunningTime(var);
+                    }
+                    
+                    else if (p.getProcessState() == "ready"){
+                        int var = p.getReadyNum();
+                        var++;
+                        p.setReadyNum(var);
+                        Jobready++;
+                    }
+                    
+                }
+                
+            }
+            
+            //do blocked
+            
+            for (Process p: jobList2){
+                if (p.getProcessState() == "blocked"){
+                    
+                    int var = p.getBlockedNum();
+                    var++;
+                    p.setBlockedNum(var);
+                    
+                    if (accountedfor == false){
+                        Jobblocked++;
+                        accountedfor = true;
+                    }
+                    
+                    int newvar = p.getIOBurstRemaining();
+                    newvar--;
+                    p.setIOBurstRemaining(newvar);
+                    
+                    if (p.getIOBurstRemaining() == 0){
+                        q.add(p);
+                        p.setProcessState("ready");
+                        readyCounter++;
+                    }
+                    
+                }
+            }
+            
+            for (Process p: jobList2){
+            	p.setCycle(cycle);
+            }
+            insertionSortHPRN(q);
+            
+            //do running
+            for (Process p: jobList2){
+                
+                
+                if (p.getProcessState() == "running" && processRunning != null){
+                    quantum--; //decrement the quantum
+                    
+                    int newvar2 = p.getCPUTimeRemaining();
+                    newvar2--;
+                    p.setCPUTimeRemaining(newvar2);
+                    
+                    
+                    int newvar = p.getCPUBurstRemaining();
+                    newvar--;
+                    p.setCPUBurstRemaining(newvar);
+                    
+                    
+                    
+                    if (p.getCPUBurstRemaining() == 0 && p.getCPUTimeRemaining() > 0){
+                        p.setProcessState("blocked");
+                        processRunning = null;
+                        p.setIOBurstRemaining(RandomOS(p.getIO()));
+                        
+                    }
+                    if (p.getCPUTimeRemaining() == 0){
+                        p.setProcessState("terminated");
+                        numterminate++;
+                        processRunning = null;
+                        p.setEndTime(cycle);
+                    }
+                    
+                }
+            }
+            
+//            if (readyq.size() >= 1){
+//                insertionSortHPRN(readyq);
+//                for (Process p: readyq){
+//                    q.add(p);
+//                }
+//                readyq.clear();
+//            }
+            
+            
+            
+            
+            //do arriving
+            for(Process p: jobList2){
+                
+                if (p.getA() == cycle && p.getProcessState() == "unstarted"){
+                    p.setProcessState("ready");
+                    readyCounter++;
+                    q.add(p);
+//                    p.calcRatio(cycle);
+//                    System.out.println(p.getPriorityRatio());
+                }
+                
+            }
+            
+            
+            
+            //do_ready
+            for(Process p: jobList2){
+                if (p.getProcessState() == "ready" && processRunning == null){
+                   
+                    
+                    if (q.size() > 0){
+                        p = q.get(0);
+                        p.setProcessState("running");
+                        processRunning = p;
+                        
+                        if (p.getCPUBurstRemaining() == 0){
+                            p.setCPUBurstRemaining(RandomOS(p.getB()));
+                        }
+                        
+                        q.remove(0);
+                    }
+                }
+                
+                
+            }
+            
+            cycle++;
+            
+            
+        }
+        System.out.println(" ");
+        System.out.println("The scheduling algorithm used was Round Robin");
+        System.out.println(" ");
+        
+        for(Process p: jobList2){
+            
+            System.out.println("Process Count: " + numProcesses);
+            System.out.println("     " + "(A,B,C,IO) = " + "(" + p.getA() + " " +  p.getB() + " " + p.getC2() + " " +  p.getIO() + ")");
+            System.out.println("     " + "Finishing Time = " +  (p.getEndTime()));
+            System.out.println("     " + "Turnaround Time = " + ((p.getEndTime()) - p.getA()));
+            System.out.println("     " + "I/O Time = " + p.getBlockedNum());
+            System.out.println("     " + "Waiting Time = " + p.getReadyNum());
+            
+            System.out.println( " ");
+            numProcesses++;
+            avgturnaround = avgturnaround + (p.getEndTime() - p.getA());
+            avgreadytime = avgreadytime + (p.getReadyNum());
+            
+        }
+        
+        System.out.println("Summary Data: ");
+        System.out.println("     " + "Finishing Time = " + (cycle-1));
+        System.out.println("     " + "CPU Utilization = " + CPUUtilization(Jobrunning, cycle));
+        System.out.println("     " + "I/O Utilization = " + IOUtliziation(Jobblocked, cycle));
+        System.out.println("     " + "Throughput = " + Throughput(numProcesses, cycle) + " processes per hundred cycles");
+        System.out.println("     " + "Average turnaround time = " + TurnAroundTime(avgturnaround, numProcesses) );
+        System.out.println("     " + "Average waiting time = " + WaitingTime(avgreadytime, numProcesses));
+        
+        
+    }
+    
     
     //function RandomOS(U)
     
@@ -689,7 +933,6 @@ public class Schedule extends Process{
         return decimalFormat.format(calculation);
     }
     
-    
     //driver statement
     public static void main(String[]args){
         int counter = 0;
@@ -697,18 +940,57 @@ public class Schedule extends Process{
         ArrayList<Integer> tempList = new ArrayList<Integer>(); //arraylist to hold a temp list of A, B, C, IO
         java.util.List<Integer> subList = new ArrayList<Integer>(); //splits arraylist into intervals of 4 for each process
         
-        Scanner sc = newScanner(args[0]);
+        Scanner sc;
+        Scanner sc2;
+        String hello;
+        boolean round_robin = false;
+        boolean HPRN = false;
+        boolean LCFS = false;
+        boolean FCFS = false;
+        
+//        if (args.length > 0){
+//        	System.out.println("hello");
+//        }
         
         
         //sets the boolean flag for verbose
-        if (args.length > 1){
-            if (args[0] == ("--verbose")){
-                verbose = true;
-                sc = newScanner(args[1]);
+        if (args.length > 2){
+        	hello = new String(args[2]);
+            verbose = true;
+            sc = newScanner(args[1]);
+            
+            if (hello.equals("RR")){
+            	round_robin = true;
             }
+            else if (hello.equals("FCFS")){
+            	FCFS = true;
+            }
+            else if (hello.equals("LCFS")){
+            	LCFS = true;
+            }
+            else if (hello.equals("HPRN")){
+            	HPRN = true;
+            }
+            
+//            System.out.println(round_robin);
+            
         }
         else{
             verbose = false;
+            sc = newScanner(args[0]);
+            hello = new String(args[1]);
+            if (hello.equals("RR")){
+            	round_robin = true;
+            }
+            else if (hello.equals("FCFS")){
+            	FCFS = true;
+            }
+            else if (hello.equals("LCFS")){
+            	LCFS = true;
+            }
+            else if (hello.equals("HPRN")){
+            	HPRN = true;
+            }
         }
         
         
@@ -727,6 +1009,7 @@ public class Schedule extends Process{
             if (!(subList.isEmpty())){
                 Process p = new Process(subList.get(0), subList.get(1), subList.get(2), subList.get(3));
                 jobList.add(p);
+                jobListq.add(p);
                 p.setPriority(counter);
                 counter++;
             }
@@ -750,18 +1033,26 @@ public class Schedule extends Process{
         
         System.out.println("");
         
-        //FCFS algo
-        //                 FCFS(jobList);
-        RR(jobList);
-//                LCFS(jobList);
+        if (HPRN){
+        	HPRN(jobList);
+        }
+        
+        else if (round_robin){
+        	RR(jobList);
+        }
+        
+        else if(FCFS){
+        	FCFS(jobList);
+        }
+        
+        else if(LCFS){
+        	LCFS(jobList);
+        }
+        
         sc.close();
         
         
     }
-    
-    
-    
-    
     
     
     
@@ -784,6 +1075,41 @@ public class Schedule extends Process{
                         jobList2.set(j-1, temp);
                     }
                 }
+            }
+        }
+        return jobList2;
+    }
+    
+    public static java.util.List<Process> insertionSortHPRN(java.util.List<Process> jobList2){
+        Process temp;
+        
+        for(int i = 1; i < jobList2.size(); i++){
+            for (int j = i; j > 0; j--){
+            	
+            	if (jobList2.get(j).calcRatio() > jobList2.get(j-1).calcRatio()){
+                    temp = jobList2.get(j);
+                    jobList2.set(j, jobList2.get(j-1));
+                    jobList2.set(j-1, temp);
+            	}
+            	
+            	else if (jobList2.get(j).calcRatio() == jobList2.get(j-1).calcRatio()){
+            		      	
+	            	if (jobList2.get(j).getA() < jobList2.get(j-1).getA()){
+	                    temp = jobList2.get(j);
+	                    jobList2.set(j, jobList2.get(j-1));
+	                    jobList2.set(j-1, temp);
+	                    
+	                }
+	                
+	                else{
+	                    if (jobList2.get(j).getPriority() < jobList2.get(j-1).getPriority()){
+	                        temp = jobList2.get(j);
+	                        jobList2.set(j, jobList2.get(j-1));
+	                        jobList2.set(j-1, temp);
+	                    }
+	                }
+                }
+             
             }
         }
         return jobList2;
